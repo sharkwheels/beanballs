@@ -1,5 +1,5 @@
 // giving this a try.
-// Code written by Boris Klout, used in Costumes for Cyborgs. 
+// Code written by Boris Kourt, used in Costumes for Cyborgs. 
 // May 2015
 // additions: passing the bean name, enbale only if BT is active, added a listening socket. 
 
