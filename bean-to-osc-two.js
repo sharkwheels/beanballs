@@ -1,4 +1,4 @@
-// giving this a try via just straight up nobel.
+// giving this a try.
 // Code written by Boris Klout, used in Costumes for Cyborgs. 
 // May 2015
 // additions: passing the bean name, enbale only if BT is active, added a listening socket. 
@@ -31,7 +31,7 @@ var dgram = require('dgram');
 var util  = require('util');
 var _     = require('lodash');
 
-// this will begin scanning only if blue tooth is enabled on the computer.
+// this will begin scanning only if bluetooth is enabled on the computer.
 
 noble.on('stateChange', function(state){
 	if (state === 'poweredOn'){
@@ -66,12 +66,12 @@ sock = dgram.createSocket("udp4", function(msg, rinfo) {
     }
 });
 
-sock.bind(inport);
+sock.bind(inport); 
 
 
 // Send Data Function
 var sendDataToOSC = null;
-var beanName; // yes its a global but fuck it. I have to run this process like twice. 
+var beanName; 
 
 
 {   var oscBuffer;
@@ -168,7 +168,7 @@ var setupPeripheral = function(peripheral) {
 
 }; 
 
-// noble's discovery thing. What its saying is if this BLE object has these particular scratch characteristcs then connect to it.
+// noble's discovery thing. If this BLE object has these particular scratch characteristcs then connect to it.
 
 noble.on('discover', function(peripheral) {
 
