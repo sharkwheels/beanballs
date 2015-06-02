@@ -11,11 +11,12 @@ Minim       minim;
 AudioOutput out;
 Oscil       wave;
 
-float bankValue; 
-String nameValue;
+
 
 boolean blueThing = false;
 boolean redThing = true;
+
+String [] beanNames = {"BeanBall1","BeanBall2"};
 
 
 void setup() {
@@ -33,7 +34,7 @@ void setup() {
   	out = minim.getLineOut();
   
   	wave = new Oscil( 440, 0.5f, Waves.SINE );
-  	wave.patch( out );
+  	//wave.patch( out );
 }
 
 void draw() {
@@ -51,14 +52,33 @@ void draw() {
 
 // just testing this to see if it talks back to JS
 
-void mousePressed() {
-  /* create a new OscMessage with an address pattern, in this case /test. */
-  OscMessage myOscMessage = new OscMessage("/hello");
-  /* add a value (an integer) to the OscMessage */
-  myOscMessage.add(100);
-  /* send the OscMessage to a remote location specified in myNetAddress */
-  oscP5.send(myOscMessage, myRemoteLocation);
+void sendAMessage(String n) {
+
+	// i will need more logic in here. Right now it trips off immediately. But it works. 
+
+	println("!sendAMessage n: " + n );
+
+	OscMessage myOscMessage = new OscMessage("/processing");
+
+	if (n != null) {
+		if (n.equals(beanNames[0]) == true) {
+
+			myOscMessage.add(n); // add the ball name
+			myOscMessage.add("blue"); // send back a command for the bean
+		}
+
+		if (n.equals(beanNames[1]) == true) {
+
+			myOscMessage.add(n); // and the ball name
+			myOscMessage.add("red"); // send back a command for the bean
+
+		}
+
+	}
+
+	oscP5.send(myOscMessage, myRemoteLocation);
 }
+
 
 
 void makeNoise(float bValue, String nValue) {
@@ -66,16 +86,14 @@ void makeNoise(float bValue, String nValue) {
 	float bV = bValue;
 	String nV = nValue; 
 
-	String [] str1 = {"BeanBall1","BeanBall2"};
 
 	// need to twiddle w/ frequency stuff in here as well. 
-
-
+	
 	// if neither item is empty
 
 	if ((bV != 0.0) && (nV != null)) {
 
-		if (nV.equals(str1[0]) == true) {
+		if (nV.equals(beanNames[0]) == true) {
 			println(nV + " " + bV);
 			wave.setWaveform(Waves.SAW);
 			wave.setFrequency( 200 );
@@ -84,7 +102,7 @@ void makeNoise(float bValue, String nValue) {
 			
 		}
 
-		if (nV.equals(str1[1])== true) {
+		if (nV.equals(beanNames[1])== true) {
 			println(nV + " " + bV);
 			wave.setWaveform(Waves.SQUARE);
 			wave.setFrequency( 300 );
@@ -98,7 +116,7 @@ void makeNoise(float bValue, String nValue) {
 }
 
 void oscEvent(OscMessage theOscMessage) {
-	
+	theOscMessage.print();
 
 	if (theOscMessage.checkAddrPattern("/data") == true) {
 		
@@ -108,10 +126,11 @@ void oscEvent(OscMessage theOscMessage) {
 			String n = theOscMessage.get(0).stringValue();
 			float d = theOscMessage.get(1).floatValue();
 			float b = theOscMessage.get(2).floatValue();
-			bankValue = b;
-			nameValue = n;
 
-			makeNoise(bankValue, nameValue);
+			makeNoise(b, n);
+			sendAMessage(n);
+			
+			
 
 
 		}
