@@ -34,7 +34,7 @@ void setup() {
   	out = minim.getLineOut();
   
   	wave = new Oscil( 440, 0.5f, Waves.SINE );
-  	//wave.patch( out );
+  	wave.patch( out ); 
 }
 
 void draw() {
