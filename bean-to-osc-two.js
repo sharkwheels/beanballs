@@ -1,10 +1,8 @@
-// giving this a try.
-// Code written by Boris Kourt, used in Costumes for Cyborgs. 
+
+// Originally written by Boris Kourt, used in Costumes for Cyborgs. 
 // May 2015
 // additions: passing the bean name, enbale only if BT is active, added a listening socket. 
-// Alex = changes to a few functions. 
-
-// ISSUES: line 69 - 108, how to write back to a scratch bank?
+// Alex = changes to setup and subscribe 
 
 "use strict";
 Buffer.prototype.toByteArray = function() { return Array.prototype.slice.call(this, 0); }; // not sure what is going on here...
@@ -90,8 +88,8 @@ function parseMsg(msg) {
         return isAll; 
 };
 
-/// This is where I'm having the issue. Basically, writeData and writeBeanCharacteristic have to be the same thing. BUT...I have to get name and 
-// characteristics from SubscribeToChars down the chain there, and isAll from the socket. How the heck do I do this? 
+/// This is where I'm having the issue. Basically, writeData and writeBeanCharacteristic have to be the same thing. 
+// But I have to pass isAll, name, and charactaristcs. Not sure how to do that. Because isAll is coming from elsewhere than name characteristics
 
 var isAll;
 
@@ -109,8 +107,6 @@ function writeData() {
 
 
 function writeBeanCharacteristic(name, characteristics) {
-
-	function writeData()
 
 	characteristics.forEach(function (nobleObject, index) {
 
