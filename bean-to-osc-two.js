@@ -91,7 +91,7 @@ function parseMsg(msg) {
 };
 
 /// This is where I'm having the issue. Basically, writeData and writeBeanCharacteristic have to be the same thing. BUT...I have to get name and 
-// characteristics from SubscribeToChars down the chain there, and isAll from the socket. How the hell do I do this? 
+// characteristics from SubscribeToChars down the chain there, and isAll from the socket. How the heck do I do this? 
 
 var isAll;
 
@@ -108,9 +108,9 @@ function writeData() {
 	};
 
 
-
-
 function writeBeanCharacteristic(name, characteristics) {
+
+	function writeData()
 
 	characteristics.forEach(function (nobleObject, index) {
 
