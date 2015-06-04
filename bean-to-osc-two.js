@@ -89,9 +89,9 @@ function parseMsg(msg) {
 };
 
 
-// Problematic. So...the write function needs things from both SubscribeToChars and needs isAll. 
-// Basically writeData and writeBeanCharacteristic need to be the same function, but get info to run from other DIFFERENT FUNCTIONS
-// unless I have to pass the basic beanArray and work w/ that to set up a write? Confused. 
+// So...the write function needs things from both SetUpChars and needs isAll. 
+// Basically writeData and writeBeanCharacteristic need to be the same function, but get info from Two different other functions.
+// unless I have to pass the basic beanArray which contains two objects and work w/ that to set up a .write? Confused. 
 
 var isAll;
 
@@ -199,9 +199,8 @@ var setupChars = function(peripheral) {
 
 		//console.log('SetupChars!', name);
 
-		subscribeToChars(name, characteristics); // pass to subscribe / read
-
-		writeBeanCharacteristic(name, characteristics); // pass to write function
+		subscribeToChars(name, characteristics); // pass to subscribe to setup reading.
+		writeBeanCharacteristic(name, characteristics); // pass to write function (not sure if this is correct)
 
 		
 	});
