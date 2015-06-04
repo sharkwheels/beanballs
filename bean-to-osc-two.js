@@ -88,12 +88,14 @@ function parseMsg(msg) {
         return isAll; 
 };
 
-/// This is where I'm having the issue. Basically, writeData and writeBeanCharacteristic have to be the same thing. 
-// But I have to pass isAll, name, and charactaristcs. Not sure how to do that. Because isAll is coming from elsewhere than name characteristics
+
+// Problematic. So...the write function needs things from both SubscribeToChars and needs isAll. 
+// Basically writeData and writeBeanCharacteristic need to be the same function, but get info to run from other DIFFERENT FUNCTIONS
+// unless I have to pass the basic beanArray and work w/ that to set up a write? Confused. 
 
 var isAll;
 
-function writeData() {
+var writeData = function () {
 
 		console.log("writeData", isAll);
 
@@ -101,20 +103,18 @@ function writeData() {
 		var whichBean = isAll[1];
 		console.log("writeData: ", colour, whichBean);
 
-		// crap...I need to figure out how to either get WriteBeanCharateristics in here or get writeData into writeBeanCharacteristics
-
 	};
 
+var writeBeanCharacteristic = function(name, characteristics) {
 
-function writeBeanCharacteristic(name, characteristics) {
 
 	characteristics.forEach(function (nobleObject, index) {
 
 		//console.log("!writeForEach: ", nobleObject, "idx: ", index)
 		var scratchNumber = index + 2;
-		console.log("!writeForEach: ", characteristics);
+		//console.log("!writeForEach: ", characteristics);
 
-		// not even sure if this is right...
+		// Hmmm....
 
 		
 		nobleObject.notify(true, function(err) {
@@ -124,6 +124,7 @@ function writeBeanCharacteristic(name, characteristics) {
 	});
 
  };
+
 
 
 // Send data over OSC to Processing
@@ -160,7 +161,7 @@ var sendDataToOSC = null;
 
 var subscribeToChars = function(name, characteristics) {
 
-	console.log('subscribeToChars', name);
+	//console.log('subscribeToChars', name);
 	
 	// This was an Alex edit, passing the object ito the forEach. 
 
@@ -171,7 +172,7 @@ var subscribeToChars = function(name, characteristics) {
 
 		nobleObject.on("read", function(data, sad) {
 			
-			console.log('inside Read marker', data, sad, 'name', name);
+			//console.log('inside Read marker', data, sad, 'name', name);
 
 			var value = data[1]<<8 || (data[0]); // not sure what is going on here...
 			sendDataToOSC(scratchNumber, value, name); // To OSC	
@@ -191,12 +192,12 @@ var setupChars = function(peripheral) {
 
 	var name = peripheral.advertisement.localName;
 
-	console.log('insideSetupChars!', name);
+	//console.log('insideSetupChars!', name);
 
 	peripheral.discoverSomeServicesAndCharacteristics([],scratch,function(err,services,characteristics) {
 		if (err) throw err;
 
-		console.log('SetupChars!', name);
+		//console.log('SetupChars!', name);
 
 		subscribeToChars(name, characteristics); // pass to subscribe / read
 
@@ -209,7 +210,7 @@ var setupChars = function(peripheral) {
 
 var setupPeripheral = function(a) {
 
-	console.log("!setupPeripheral", a); // yes that is passing both
+	//console.log("!setupPeripheral", a); // yes that is passing both
 	console.log('Connecting to ' + a.advertisement.localName + '...');
 
     a.connect(function(err) {
@@ -242,9 +243,9 @@ noble.on('discover', function(peripheral) {
 
 	  	// stop looking for beans when you've connected to 4 of them. 
 
-	  	if (beanArray.length >= 4) {
+	  	if (beanArray.length >= maxLength) {
 	  		noble.stopScanning();
-	    	console.log("4 beans are connected. Stopped scanning.");
+	    	console.log(maxLength + " beans are connected. Stopped scanning.");
 	  	}
 	  	
 	    // Once found, puch the array through to "peripheral"
