@@ -2,7 +2,7 @@
 // Originally written by Boris Kourt, used in Costumes for Cyborgs. 
 // May 2015
 // additions: passing the bean name, enbale only if BT is active, added a listening socket. 
-// Alex = changes to setup and subscribe 
+// Alex = pretty much re-wrote 70% of it. THANKS ALEX.
 
 "use strict";
 Buffer.prototype.toByteArray = function() { return Array.prototype.slice.call(this, 0); }; // not sure what is going on here...
@@ -19,6 +19,9 @@ var scratchOne = "a495ff21c5b14b44b5121370f02d74de",
 // Up to the three listed above. (Comma separated within brackets below.)
 
 var scratch = [scratchOne];
+
+var spitItOut = [scratchOne, scratchTwo];
+
 var serviceUUID = 'a495ff10c5b14b44b5121370f02d74de'; // look for bean specific characteristics
 
 // ******
@@ -29,12 +32,15 @@ var noble = require('noble');
 var osc   = require('osc-min');
 var dgram = require('dgram');
 var util  = require('util');
+
 var _     = require('lodash');
 
 // Globals ============================================
 var beanArray = [];
+var writeMe; // write to this characteristic, stored at the value of scratchTwo
+
 var maxLength = 4;
-// var sendDataToOSC = null;
+
 
 // this will begin scanning only if bluetooth is enabled on the computer.
 
@@ -64,15 +70,12 @@ console.log("OSC listener running at http://localhost:" + inport);
 //  CREATE AND BIND SOCKET TO LISTEN FOR MESSAGEES FROM PROCESSING ============
 var sock = dgram.createSocket("udp4", function(msg, rinfo){
 			newSocket(msg, rinfo);
-
 		});
 
 sock.bind(inport); // this binds the socket to the port!
 
+
 // FUNCTIONS LIST =========================================
-sock.on('/processing', function(msg) {
-	console.log('messages from processing', msg);
-})
 
 var newSocket = function(msg, rinfo){
 	console.log('onCreateSocket', msg, rinfo);	
@@ -80,31 +83,36 @@ var newSocket = function(msg, rinfo){
 
     // make an object out of it
     var passThrough = {
-    	name     : getMsg.args[1].value,
-    	msg      : getMsg.args[0].value,
+    	msg      : getMsg.args[1].value,
+    	name     : getMsg.args[0].value,
     	address  : getMsg.address,
     	type     : getMsg.oscType
     };
 
-	_.map(characteristics, function(n, i){
-		//console.log("!writeForEach: ", nobleObject, "idx: ", index)
-		var scratchNumber = index + 2;
-		//console.log("!writeForEach: ", characteristics);
+    console.log("newSocket", passThrough.name);
 
-		// Hmmm....
-		n.notify(true, function(err) {
-			if (err) throw err;
-		});
-	})
-    // pass the object to the next step
+    _.map(beanArray, function(n){
+    	if(n.advertisement.localName === passThrough.name){
+    		// scratch === characteristic to write to.
+	        console.log('Writing to ', n.advertisement.localName );
+
+	        
+	        // // IN HERE: write the buffer information you want to send to the bean
+	        /*writeMe.write(new Buffer([5], false, function(err){
+	        	if(err){ console.error(err); }
+	        });
+			*/
+
+    		/// try and find a buffer
+		    
+    	} else {
+    		return;
+    	}
+    })
 };
 
 
-// Problematic. So...the write function needs things from both readDataFromBean and needs isAll. 
-// Basically writeData and writeBeanCharacteristic need to be the same function, but get info to run from other DIFFERENT FUNCTIONS
-// unless I have to pass the basic beanArray and work w/ that to set up a write? Confused. 
 
-// var isAll;
 
 // Send data over OSC to Processing -- will need to be called now.
  
@@ -132,6 +140,8 @@ var readDataFromBean = function(name, characteristics) {
 	// This was an Alex edit, passing the object ito the forEach. 
 	_.map(characteristics, function(n, index){
 
+		if(scratchTwo === n.uuid){ writeMe = n; }
+
 		var scratchNumber = index + 1;
 
 		n.on("read", function(data, sad) {
@@ -156,21 +166,14 @@ var setupChars = function(peripheral) {
 
 	peripheral.discoverSomeServicesAndCharacteristics([],scratch,function(err,services,characteristics) {
 		if (err) throw err;
-
-		//console.log('SetupChars!', name);
-
 		readDataFromBean(name, characteristics); // pass to subscribe / read
-
-		//writeBeanCharacteristic(name, characteristics); // pass to write function
-
-		
 	});
 
 };
 
 var setupPeripheral = function(a) {
 
-	//console.log("!setupPeripheral", a); // yes that is passing both
+	console.log("!setupPeripheral", a); // yes that is passing both
 	console.log('Connecting to ' + a.advertisement.localName + '...');
 
     a.connect(function(err) {
