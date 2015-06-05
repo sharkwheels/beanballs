@@ -30,7 +30,11 @@ var osc   = require('osc-min');
 var dgram = require('dgram');
 var util  = require('util');
 var _     = require('lodash');
-var async = require('async');
+
+// Globals ============================================
+var beanArray = [];
+var maxLength = 4;
+// var sendDataToOSC = null;
 
 // this will begin scanning only if bluetooth is enabled on the computer.
 
@@ -51,141 +55,96 @@ var outport = 3000; // where this client is broadcasting too
 console.log("OSC will be sent to: http://127.0.0.1:" + outport);
 
 var inport = 4000;
+
 console.log("OSC listener running at http://localhost:" + inport);
 
 // OSC Talk back from Processing
 // I still feel like this is wrong. 
 
-var sock = dgram.createSocket("udp4", onCreateSocket);
-function onCreateSocket(msg, rinfo){
-	
-	isAll = parseMsg(msg);
-	writeData(isAll);
-};
+//  CREATE AND BIND SOCKET TO LISTEN FOR MESSAGEES FROM PROCESSING ============
+var sock = dgram.createSocket("udp4", function(msg, rinfo){
+			newSocket(msg, rinfo);
 
-sock.bind(inport); 
+		});
 
+sock.bind(inport); // this binds the socket to the port!
 
-function parseMsg(msg) {
-	//console.log("!parseMsg",msg);
+// FUNCTIONS LIST =========================================
+sock.on('/processing', function(msg) {
+	console.log('messages from processing', msg);
+})
 
-	// get at all that info being sent out from Processing.
+var newSocket = function(msg, rinfo){
+	console.log('onCreateSocket', msg, rinfo);	
+    var getMsg = osc.fromBuffer(msg);
 
-        //console.log(osc.fromBuffer(msg));
+    // make an object out of it
+    var passThrough = {
+    	name     : getMsg.args[1].value,
+    	msg      : getMsg.args[0].value,
+    	address  : getMsg.address,
+    	type     : getMsg.oscType
+    };
 
-        var getMsg = osc.fromBuffer(msg);
-        var isMsg = getMsg.args[0].value;
-        var isName = getMsg.args[1].value;
-        var isAdd = getMsg.address;
-        var isType = getMsg.oscType;
-
-        // make an array out of it
-
-        var isAll = [];
-        isAll.push(isName);
-        isAll.push(isMsg);
-        isAll.push(isAdd);
-        isAll.push(isType);
-        return isAll; 
-};
-
-
-// So...the write function needs things from both SetUpChars and needs isAll. 
-// Basically writeData and writeBeanCharacteristic need to be the same function, but get info from Two different other functions.
-// unless I have to pass the basic beanArray which contains two objects and work w/ that to set up a .write? Confused. 
-
-var isAll;
-
-var writeData = function () {
-
-		console.log("writeData", isAll);
-
-		var colour = isAll[0];
-		var whichBean = isAll[1];
-		console.log("writeData: ", colour, whichBean);
-
-	};
-
-var writeBeanCharacteristic = function(name, characteristics) {
-
-
-	characteristics.forEach(function (nobleObject, index) {
-
+	_.map(characteristics, function(n, i){
 		//console.log("!writeForEach: ", nobleObject, "idx: ", index)
 		var scratchNumber = index + 2;
 		//console.log("!writeForEach: ", characteristics);
 
 		// Hmmm....
-
-		
-		nobleObject.notify(true, function(err) {
+		n.notify(true, function(err) {
 			if (err) throw err;
 		});
-
-	});
-
- };
-
-
-
-// Send data over OSC to Processing
-
-var sendDataToOSC = null;
-
-{   var oscBuffer;
-
-	sendDataToOSC = function(characteristic, data, name) {
-		//console.log('sendDataToOSC', data)
-		
-
-		oscBuffer = osc.toBuffer({
-			address: "/data",
-			args: [name, characteristic, data]
-		});
-
-		try {
-			udp.send(oscBuffer, 0, oscBuffer.length, outport, "127.0.0.1");
-			console.log(data);
-			
-		} catch (e) {
-			console.log("Error Thrown:");
-			console.log(e);
-		}
-
-		oscBuffer = null;
-
-	};
+	})
+    // pass the object to the next step
 };
 
 
+// Problematic. So...the write function needs things from both readDataFromBean and needs isAll. 
+// Basically writeData and writeBeanCharacteristic need to be the same function, but get info to run from other DIFFERENT FUNCTIONS
+// unless I have to pass the basic beanArray and work w/ that to set up a write? Confused. 
 
+// var isAll;
 
-var subscribeToChars = function(name, characteristics) {
+// Send data over OSC to Processing -- will need to be called now.
+ 
+ var sendDataToOSC = function(characteristic, data, name) {
 
-	//console.log('subscribeToChars', name);
+ 	console.log('sendDataToOSC', characteristic, data, name);
+
+ 	var oscBuffer = osc.toBuffer({
+ 			address: "/data",
+ 			args: [name, characteristic, data]
+		});
+
+	udp.send(oscBuffer, 0, oscBuffer.length, outport, "127.0.0.1", function(err){
+		if(err){console.error(err)}
+		console.log(data);
+	});
+
+	oscBuffer = null;
+};
+
+var readDataFromBean = function(name, characteristics) {
+	
+	console.log('readDataFromBean', name);
 	
 	// This was an Alex edit, passing the object ito the forEach. 
-
-	characteristics.forEach(function (nobleObject, index) {
-
+	_.map(characteristics, function(n, index){
 
 		var scratchNumber = index + 1;
 
-		nobleObject.on("read", function(data, sad) {
-			
+		n.on("read", function(data, sad) {
 			//console.log('inside Read marker', data, sad, 'name', name);
-
 			var value = data[1]<<8 || (data[0]); // not sure what is going on here...
-			sendDataToOSC(scratchNumber, value, name); // To OSC	
+			sendDataToOSC(scratchNumber, value, name); // To OSC
 		});
 
-
-		nobleObject.notify(true, function(err) {
+		n.notify(true, function(err) {
 			if (err) throw err;
 		});
 
 		console.log("Sending data for scratch #" + scratchNumber);
-
 	});
 };
 
@@ -200,8 +159,9 @@ var setupChars = function(peripheral) {
 
 		//console.log('SetupChars!', name);
 
-		subscribeToChars(name, characteristics); // pass to subscribe to setup reading.
-		writeBeanCharacteristic(name, characteristics); // pass to write function (not sure if this is correct)
+		readDataFromBean(name, characteristics); // pass to subscribe / read
+
+		//writeBeanCharacteristic(name, characteristics); // pass to write function
 
 		
 	});
@@ -228,10 +188,6 @@ var setupPeripheral = function(a) {
     });
 
 }; 
-
-var beanArray = [];
-var maxLength = 4;
-
 
 noble.on('discover', function(peripheral) {
 
