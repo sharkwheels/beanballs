@@ -2,9 +2,10 @@
 // Originally written by Boris Kourt, used in Costumes for Cyborgs. 
 // May 2015
 // additions: passing the bean name, enbale only if BT is active, added a listening socket. 
-// Alex = pretty much re-wrote 70% of it. THANKS ALEX.
+// Alex = changes to setup and subscribe 
 
 "use strict";
+
 Buffer.prototype.toByteArray = function() { return Array.prototype.slice.call(this, 0); }; // not sure what is going on here...
 
 /* | LightBlue Bean to OSC via NOBLE.
@@ -19,8 +20,6 @@ var scratchOne = "a495ff21c5b14b44b5121370f02d74de",
 // Up to the three listed above. (Comma separated within brackets below.)
 
 var scratch = [scratchOne];
-
-var spitItOut = [scratchOne, scratchTwo];
 
 var serviceUUID = 'a495ff10c5b14b44b5121370f02d74de'; // look for bean specific characteristics
 
@@ -37,7 +36,8 @@ var _     = require('lodash');
 
 // Globals ============================================
 var beanArray = [];
-var writeMe; // write to this characteristic, stored at the value of scratchTwo
+
+var writeMe = scratchTwo; // write to this characteristic, stored at the value of scratchTwo
 
 var maxLength = 4;
 
@@ -59,13 +59,10 @@ noble.on('stateChange', function(state){
 var udp = dgram.createSocket("udp4");
 var outport = 3000; // where this client is broadcasting too
 console.log("OSC will be sent to: http://127.0.0.1:" + outport);
-
 var inport = 4000;
-
 console.log("OSC listener running at http://localhost:" + inport);
 
 // OSC Talk back from Processing
-// I still feel like this is wrong. 
 
 //  CREATE AND BIND SOCKET TO LISTEN FOR MESSAGEES FROM PROCESSING ============
 var sock = dgram.createSocket("udp4", function(msg, rinfo){
@@ -94,14 +91,16 @@ var newSocket = function(msg, rinfo){
     _.map(beanArray, function(n){
     	if(n.advertisement.localName === passThrough.name){
     		// scratch === characteristic to write to.
-	        console.log('Writing to ', n.advertisement.localName );
 
+    		// I don't get this. What Object is "write me" supposed to be? The bean? Something else? 
+
+	        console.log('Writing to ', n.advertisement.localName, writeMe);
 	        
 	        // // IN HERE: write the buffer information you want to send to the bean
-	        /*writeMe.write(new Buffer([5], false, function(err){
+	        writeMe.write(new Buffer(passThrough.msg, false, function(err){
 	        	if(err){ console.error(err); }
-	        });
-			*/
+	        }));
+			
 
     		/// try and find a buffer
 		    
@@ -140,13 +139,17 @@ var readDataFromBean = function(name, characteristics) {
 	// This was an Alex edit, passing the object ito the forEach. 
 	_.map(characteristics, function(n, index){
 
-		if(scratchTwo === n.uuid){ writeMe = n; }
+		// this is not correct. hmm....
+		
+		/*if(scratchTwo === n.uuid){ writeMe = n; }
+		console.log("readData", n);*/
 
 		var scratchNumber = index + 1;
 
 		n.on("read", function(data, sad) {
 			//console.log('inside Read marker', data, sad, 'name', name);
 			var value = data[1]<<8 || (data[0]); // not sure what is going on here...
+
 			sendDataToOSC(scratchNumber, value, name); // To OSC
 		});
 
