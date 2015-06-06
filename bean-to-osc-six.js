@@ -2,7 +2,7 @@
 // Originally written by Boris Kourt, used in Costumes for Cyborgs. 
 // May 2015
 // additions: passing the bean name, enbale only if BT is active, added a listening socket. 
-// Alex = changes to setup and subscribe 
+// Alex = changes to setup and subscribe, and restructured the functions.
 
 "use strict";
 
@@ -37,7 +37,7 @@ var _     = require('lodash');
 // Globals ============================================
 var beanArray = [];
 
-var writeMe = scratchTwo; // write to this characteristic, stored at the value of scratchTwo
+//var writeMe; // write to this characteristic, stored at the value of scratchTwo
 
 var maxLength = 4;
 
@@ -92,9 +92,9 @@ var newSocket = function(msg, rinfo){
     	if(n.advertisement.localName === passThrough.name){
     		// scratch === characteristic to write to.
 
-    		// I don't get this. What Object is "write me" supposed to be? The bean? Something else? 
+    		// Trying with just the scratch bank number, get an Object does not have a "write" property
 
-	        console.log('Writing to ', n.advertisement.localName, writeMe);
+	        console.log('Writing to ', n.advertisement.localName, scratchTwo);
 	        
 	        // // IN HERE: write the buffer information you want to send to the bean
 	        writeMe.write(new Buffer(passThrough.msg, false, function(err){
@@ -109,8 +109,6 @@ var newSocket = function(msg, rinfo){
     	}
     })
 };
-
-
 
 
 // Send data over OSC to Processing -- will need to be called now.
@@ -139,8 +137,9 @@ var readDataFromBean = function(name, characteristics) {
 	// This was an Alex edit, passing the object ito the forEach. 
 	_.map(characteristics, function(n, index){
 
-		// this is not correct. hmm....
 		
+		// this is not correct. hmm....
+
 		/*if(scratchTwo === n.uuid){ writeMe = n; }
 		console.log("readData", n);*/
 
@@ -202,18 +201,14 @@ noble.on('discover', function(peripheral) {
 
 	  if (_.contains(peripheral.advertisement.serviceUuids, serviceUUID)) {
 	  	console.log("Found a Bean");
-
 	  	// stop looking for beans when you've connected to 4 of them. 
 
 	  	if (beanArray.length >= maxLength) {
 	  		noble.stopScanning();
 	    	console.log(maxLength + " beans are connected. Stopped scanning.");
 	  	}
-	  	
 	    // Once found, puch the array through to "peripheral"
-	    
 	    beanArray.push(peripheral);
-
 	    // throw them all to the setup function
 	  	setupPeripheral(peripheral);
 
