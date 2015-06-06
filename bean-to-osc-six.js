@@ -2,7 +2,7 @@
 // Originally written by Boris Kourt, used in Costumes for Cyborgs. 
 // May 2015
 // additions: passing the bean name, enbale only if BT is active, added a listening socket. 
-// Alex = changes to setup and subscribe, and restructured the functions.
+// Alex = changes to setup and subscribe 
 
 "use strict";
 
@@ -21,7 +21,7 @@ var scratchOne = "a495ff21c5b14b44b5121370f02d74de",
 
 var scratch = [scratchOne];
 
-var serviceUUID = 'a495ff10c5b14b44b5121370f02d74de'; // look for bean specific characteristics
+var serviceUUID = "a495ff10c5b14b44b5121370f02d74de"; // look for bean specific characteristics
 
 // ******
 
@@ -92,17 +92,15 @@ var newSocket = function(msg, rinfo){
     	if(n.advertisement.localName === passThrough.name){
     		// scratch === characteristic to write to.
 
-    		// Trying with just the scratch bank number, get an Object does not have a "write" property
+			var characteristicUUID = scratchTwo;
+			console.log('Writing to ', n.advertisement.localName, characteristicUUID, serviceUUID);
 
-	        console.log('Writing to ', n.advertisement.localName, scratchTwo);
-	        
-	        // // IN HERE: write the buffer information you want to send to the bean
-	        writeMe.write(new Buffer(passThrough.msg, false, function(err){
+			// this is wrong. I get a does not have write property
+			characteristicUUID.write(new Buffer(passThrough.msg), false, function(err){
 	        	if(err){ console.error(err); }
-	        }));
-			
+	        });
 
-    		/// try and find a buffer
+	        
 		    
     	} else {
     		return;
@@ -244,3 +242,47 @@ process.on('SIGINT', exitHandler.bind(null, {exit:true}));
 process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
 
 
+
+// Ugh. just saving this for now.
+
+/*n.discoverSomeServicesAndCharacteristics(serviceUUID, characteristicUUID, function(error, services, characteristics){
+				console.log(services, characteristics);
+
+				var service = services[0];
+				var characteristic = characteristics[0];
+
+				console.log("indiscoverwrite", services[0], characteristics[0]);
+				
+				console.log('Writing to ' + n.uuid + ' (' + n.advertisement.localName + ')');
+
+				characteristic.write(new Buffer(passThrough.msg), false, function(error) { 
+					console.log(error);
+				});
+
+			});*/
+
+
+			// have to re-discover it??
+			
+			/*n.discoverSomeServicesAndCharacteristics(serviceUUID, characteristicUUID, function(error, services, characteristics){
+
+				var service = services[0];
+				var characteristic = characteristics[0];
+				
+				console.log('Writing to ' + n.uuid + ' (' + n.advertisement.localName + ')');
+
+				characteristic.write(new Buffer(passThrough.msg, false, function(error) { 
+					console.log(error);
+				}));
+
+			});*/
+			  
+			// Trying with just the scratch bank number, get an Object does not have a "write" property
+
+			// // IN HERE: write the buffer information you want to send to the bean
+	        /*writeMe.write(new Buffer(passThrough.msg, false, function(err){
+	        	if(err){ console.error(err); }
+	        }));*/
+			
+
+    		/// try and find a buffer
