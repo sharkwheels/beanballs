@@ -91,21 +91,35 @@ var newSocket = function(msg, rinfo){
     _.map(beanArray, function(n){
     	if(n.advertisement.localName === passThrough.name){
     		// scratch === characteristic to write to.
+    		// was getting weird hex code error, just did this instead.
 
-			var characteristicUUID = scratchTwo;
-			console.log('Writing to ', n.advertisement.localName, characteristicUUID, serviceUUID);
+			var scratchTransport =["a495ff20c5b14b44b5121370f02d74de"];
+			var indexAndScratches = ["a495ff11c5b14b44b5121370f02d74de", scratchOne, scratchTwo]; //[0] = index marker of scratch chars
 
-			// this is wrong. I get a does not have write property
-			characteristicUUID.write(new Buffer(passThrough.msg), false, function(err){
-	        	if(err){ console.error(err); }
-	        });
+			/*console.log('Writing to ', n.advertisement.localName, characteristicUUID, serviceUUIDThing);*/
+			//console.log("in write map", n._noble._characteristics);
 
-	        
+			n.discoverSomeServicesAndCharacteristics(scratchTransport, indexAndScratches, function(err, services, characteristics) {
+
+				var service = services[0];
+                var characteristic = characteristics[0]; 
+                
+                console.log("in discover write things", characteristic);
+
+                var buff = new Buffer(passThrough.msg);
+
+                console.log(buff);
+
+                characteristic.write(buff, false, function(err) { 
+                	if (err) {
+                		console.log(err);
+                	}
+                });   
+
+			}); 
 		    
-    	} else {
-    		return;
-    	}
-    })
+    	} // end of if
+    });
 };
 
 
@@ -173,7 +187,7 @@ var setupChars = function(peripheral) {
 
 var setupPeripheral = function(a) {
 
-	console.log("!setupPeripheral", a); // yes that is passing both
+	//console.log("!setupPeripheral", a); // yes that is passing both
 	console.log('Connecting to ' + a.advertisement.localName + '...');
 
     a.connect(function(err) {
@@ -286,3 +300,11 @@ process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
 			
 
     		/// try and find a buffer
+
+    // not sure how to track this, maybe on arduino side. or set the LED to do a thing. No errors tho! 
+                //characteristic.on('write', withoutResponse, callback());
+               	/*characteristic.write(new Buffer([passThrough.msg], false, function(err) {
+                	if(err){ 
+                		console.log(err);
+             		}
+                }));*/
