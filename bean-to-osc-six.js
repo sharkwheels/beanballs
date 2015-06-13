@@ -100,12 +100,11 @@ var writeToBean = function(passThrough){
 	console.log("in Write to bean: ", passThrough);
 
     _.map(beanArray, function(n){
+    	
     	if(n.advertisement.localName === passThrough.name){
-
     		console.log("in if passthroughname", passThrough.msg); // not sure if i need index for this function
 
     		// was getting a weird hex type error, decided to just do it this way for now. 
-
     		var scratchTransport =["a495ff20c5b14b44b5121370f02d74de"];
 			var indexAndScratches = ["a495ff11c5b14b44b5121370f02d74de", scratchOne, scratchTwo, scratchThr]; //[0] = index marker of scratch chars
 
@@ -115,16 +114,13 @@ var writeToBean = function(passThrough){
 
     			var service = services[0];	
 				var characteristic = characteristics[0];
-
 				var buff = new Buffer(passThrough.msg);
 
 				console.log("in discoverSome", buff, service, characteristic);
 
 				characteristic.write(buff, false, function(err) { 
-
-					// why does this make everything freeze?
-					// process doesn't close, but also doesn't resume hmmm....
-
+					
+					// process doesn't close, but also doesn't resume 
 					console.log("in characteristic.write ", buff);
 					
                 	if (err) {
