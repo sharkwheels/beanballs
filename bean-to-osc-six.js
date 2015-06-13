@@ -90,36 +90,36 @@ var newSocket = function(msg, rinfo){
 
     _.map(beanArray, function(n){
     	if(n.advertisement.localName === passThrough.name){
-    		// scratch === characteristic to write to.
-    		// was getting weird hex code error, just did this instead.
 
-			var scratchTransport =["a495ff20c5b14b44b5121370f02d74de"];
+    		console.log("in if passthroughname", passThrough.msg);
+    		console.log(n._characteristics);	// undefined
+
+    		var scratchTransport =["a495ff20c5b14b44b5121370f02d74de"];
 			var indexAndScratches = ["a495ff11c5b14b44b5121370f02d74de", scratchOne, scratchTwo]; //[0] = index marker of scratch chars
 
-			/*console.log('Writing to ', n.advertisement.localName, characteristicUUID, serviceUUIDThing);*/
-			//console.log("in write map", n._noble._characteristics);
+    		n.discoverSomeServicesAndCharacteristics(scratchTransport, indexAndScratches, function(err, services, characteristics) {
+    			
+    			console.log("in discoverSome");
 
-			n.discoverSomeServicesAndCharacteristics(scratchTransport, indexAndScratches, function(err, services, characteristics) {
+    			var service = services[0];
+				var characteristic = characteristics[0];
+				
 
-				var service = services[0];
-                var characteristic = characteristics[0]; 
-                
-                console.log("in discover write things", characteristic);
+				var buff = new Buffer(passThrough.msg);
 
-                var buff = new Buffer(passThrough.msg);
-
-                console.log(buff);
-
-                characteristic.write(buff, false, function(err) { 
+				characteristic.write(buff, false, function(err) { 
+					// why does this make everything freeze?
+					console.log(buff);
+					
                 	if (err) {
                 		console.log(err);
                 	}
                 });   
 
-			}); 
-		    
-    	} // end of if
-    });
+    		});
+    	/////////////////////// LEAVE THESE ///////////////////////////////////
+    	}		
+	});
 };
 
 
@@ -255,56 +255,3 @@ process.on('SIGINT', exitHandler.bind(null, {exit:true}));
 //catches uncaught exceptions
 process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
 
-
-
-// Ugh. just saving this for now.
-
-/*n.discoverSomeServicesAndCharacteristics(serviceUUID, characteristicUUID, function(error, services, characteristics){
-				console.log(services, characteristics);
-
-				var service = services[0];
-				var characteristic = characteristics[0];
-
-				console.log("indiscoverwrite", services[0], characteristics[0]);
-				
-				console.log('Writing to ' + n.uuid + ' (' + n.advertisement.localName + ')');
-
-				characteristic.write(new Buffer(passThrough.msg), false, function(error) { 
-					console.log(error);
-				});
-
-			});*/
-
-
-			// have to re-discover it??
-			
-			/*n.discoverSomeServicesAndCharacteristics(serviceUUID, characteristicUUID, function(error, services, characteristics){
-
-				var service = services[0];
-				var characteristic = characteristics[0];
-				
-				console.log('Writing to ' + n.uuid + ' (' + n.advertisement.localName + ')');
-
-				characteristic.write(new Buffer(passThrough.msg, false, function(error) { 
-					console.log(error);
-				}));
-
-			});*/
-			  
-			// Trying with just the scratch bank number, get an Object does not have a "write" property
-
-			// // IN HERE: write the buffer information you want to send to the bean
-	        /*writeMe.write(new Buffer(passThrough.msg, false, function(err){
-	        	if(err){ console.error(err); }
-	        }));*/
-			
-
-    		/// try and find a buffer
-
-    // not sure how to track this, maybe on arduino side. or set the LED to do a thing. No errors tho! 
-                //characteristic.on('write', withoutResponse, callback());
-               	/*characteristic.write(new Buffer([passThrough.msg], false, function(err) {
-                	if(err){ 
-                		console.log(err);
-             		}
-                }));*/

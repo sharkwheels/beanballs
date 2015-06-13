@@ -34,7 +34,7 @@ void setup() {
   	out = minim.getLineOut();
   
   	wave = new Oscil( 440, 0.5f, Waves.SINE );
-  	wave.patch( out ); 
+  	//wave.patch( out );
 }
 
 void draw() {
@@ -63,7 +63,7 @@ void sendAMessage(String n) {
 	if (n != null) {
 		if (n.equals(beanNames[0]) == true) {
 
-			myOscMessage.add(n); // add the ball name
+			myOscMessage.add(n); // add the baseLinel name
 			myOscMessage.add("blue"); // send back a command for the bean
 		}
 
@@ -130,8 +130,6 @@ void oscEvent(OscMessage theOscMessage) {
 			makeNoise(b, n);
 			sendAMessage(n);
 			
-			
-
 
 		}
 	}

@@ -55,8 +55,6 @@ void loop() {
  if(accelDifference > accelerationThreshold){
    // get the event pressure
      if (event.pressure){
-       
-        
         
         float seaLevelPressure = 1024;
         //float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
@@ -113,6 +111,7 @@ String getCommand() {
   strCmd.toUpperCase();
   // Clear the command so we don't process twice
   uint8_t buffer[1] = { ' ' };
+
   Bean.setScratchData( 2, buffer, 1 );
 
   return strCmd;
