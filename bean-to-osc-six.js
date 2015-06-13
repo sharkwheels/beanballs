@@ -75,7 +75,9 @@ sock.bind(inport); // this binds the socket to the port!
 // FUNCTIONS LIST =========================================
 
 var newSocket = function(msg, rinfo){
+
 	console.log('onCreateSocket', msg, rinfo);	
+
     var getMsg = osc.fromBuffer(msg);
 
     // make an object out of it
@@ -88,28 +90,42 @@ var newSocket = function(msg, rinfo){
 
     console.log("newSocket", passThrough.name);
 
+    writeToBean(passThrough);
+// end of new socket
+};
+
+var writeToBean = function(passThrough){
+
+	passThrough = passThrough;
+	console.log("in Write to bean: ", passThrough);
+
     _.map(beanArray, function(n){
     	if(n.advertisement.localName === passThrough.name){
 
-    		console.log("in if passthroughname", passThrough.msg);
-    		console.log(n._characteristics);	// undefined
+    		console.log("in if passthroughname", passThrough.msg); // not sure if i need index for this function
+
+    		// was getting a weird hex type error, decided to just do it this way for now. 
 
     		var scratchTransport =["a495ff20c5b14b44b5121370f02d74de"];
-			var indexAndScratches = ["a495ff11c5b14b44b5121370f02d74de", scratchOne, scratchTwo]; //[0] = index marker of scratch chars
+			var indexAndScratches = ["a495ff11c5b14b44b5121370f02d74de", scratchOne, scratchTwo, scratchThr]; //[0] = index marker of scratch chars
 
     		n.discoverSomeServicesAndCharacteristics(scratchTransport, indexAndScratches, function(err, services, characteristics) {
     			
-    			console.log("in discoverSome");
+    			console.log("discoverSome", services, characteristics);
 
-    			var service = services[0];
+    			var service = services[0];	
 				var characteristic = characteristics[0];
-				
 
 				var buff = new Buffer(passThrough.msg);
 
+				console.log("in discoverSome", buff, service, characteristic);
+
 				characteristic.write(buff, false, function(err) { 
+
 					// why does this make everything freeze?
-					console.log(buff);
+					// process doesn't close, but also doesn't resume hmmm....
+
+					console.log("in characteristic.write ", buff);
 					
                 	if (err) {
                 		console.log(err);
@@ -117,10 +133,9 @@ var newSocket = function(msg, rinfo){
                 });   
 
     		});
-    	/////////////////////// LEAVE THESE ///////////////////////////////////
     	}		
 	});
-};
+}
 
 
 // Send data over OSC to Processing -- will need to be called now.
@@ -146,19 +161,13 @@ var readDataFromBean = function(name, characteristics) {
 	
 	console.log('readDataFromBean', name);
 	
-	// This was an Alex edit, passing the object ito the forEach. 
 	_.map(characteristics, function(n, index){
-
-		
-		// this is not correct. hmm....
-
-		/*if(scratchTwo === n.uuid){ writeMe = n; }
-		console.log("readData", n);*/
 
 		var scratchNumber = index + 1;
 
 		n.on("read", function(data, sad) {
 			//console.log('inside Read marker', data, sad, 'name', name);
+
 			var value = data[1]<<8 || (data[0]); // not sure what is going on here...
 
 			sendDataToOSC(scratchNumber, value, name); // To OSC
