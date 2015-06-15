@@ -1,5 +1,5 @@
 
-// Originally written by Boris Kourt, used in Costumes for Cyborgs. 
+// Originally written by Boris Kourtoukov, used in Costumes for Cyborgs. 
 // May 2015
 // additions: passing the bean name, enbale only if BT is active, added a listening socket. 
 // Alex = changes to setup and subscribe 
@@ -102,6 +102,7 @@ var writeToBean = function(passThrough){
     _.map(beanArray, function(n){
     	
     	if(n.advertisement.localName === passThrough.name){
+    		
     		console.log("in if passthroughname", passThrough.msg); // not sure if i need index for this function
 
     		// was getting a weird hex type error, decided to just do it this way for now. 
@@ -119,7 +120,7 @@ var writeToBean = function(passThrough){
 				console.log("in discoverSome", buff, service, characteristic);
 
 				characteristic.write(buff, false, function(err) { 
-					
+
 					// process doesn't close, but also doesn't resume 
 					console.log("in characteristic.write ", buff);
 					
