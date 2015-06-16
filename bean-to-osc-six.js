@@ -1,5 +1,5 @@
 
-// Originally written by Boris Kourtoukov, used in Costumes for Cyborgs. 
+// Originally written by Boris Kourt, used in Costumes for Cyborgs. 
 // May 2015
 // additions: passing the bean name, enbale only if BT is active, added a listening socket. 
 // Alex = changes to setup and subscribe 
@@ -31,7 +31,7 @@ var noble = require('noble');
 var osc   = require('osc-min');
 var dgram = require('dgram');
 var util  = require('util');
-
+var async = require('async');
 var _     = require('lodash');
 
 // Globals ============================================
@@ -91,48 +91,82 @@ var newSocket = function(msg, rinfo){
     console.log("newSocket", passThrough.name);
 
     writeToBean(passThrough);
+    //testToBean(passThrough);
+    
 // end of new socket
 };
 
 var writeToBean = function(passThrough){
 
-	passThrough = passThrough;
+	var passThrough = passThrough;
+
 	console.log("in Write to bean: ", passThrough);
 
     _.map(beanArray, function(n){
-    	
     	if(n.advertisement.localName === passThrough.name){
-    		
-    		console.log("in if passthroughname", passThrough.msg); // not sure if i need index for this function
+
+    		//console.log("in if passthroughname", passThrough.msg, n.advertisement.localName); // not sure if i need index for this function
+    		var name = n.advertisement.localName;
+
+    		n.discoverSomeServicesAndCharacteristics([],scratch,function(err,services,characteristics) {
+				if (err) throw err;
+
+				var buff = new Buffer(passThrough.msg);
+
+				console.log("in discoversome", buff);
+				console.log('in discoversome', characteristics);
+
+				var characteristic = characteristics[0];
+				_.map(characteristics, function(n, index){
+						characteristic.write(buff, false, function(err) { 
+						// why does this make everything freeze?
+						// process doesn't close, doesn't throw an error, but also doesn't resume hmmm....
+						console.log("in characteristic.write ", buff);
+
+						if (err) throw err;
+					});   
+
+				});
+				
+			});
+
+			// old discover some, where i was manually following of an example. Same issue tho, got to write and then didn't resume. 
 
     		// was getting a weird hex type error, decided to just do it this way for now. 
-    		var scratchTransport =["a495ff20c5b14b44b5121370f02d74de"];
-			var indexAndScratches = ["a495ff11c5b14b44b5121370f02d74de", scratchOne, scratchTwo, scratchThr]; //[0] = index marker of scratch chars
 
-    		n.discoverSomeServicesAndCharacteristics(scratchTransport, indexAndScratches, function(err, services, characteristics) {
+    		//var scratchTransport =["a495ff20c5b14b44b5121370f02d74de"];
+			//var indexAndScratches = ["a495ff11c5b14b44b5121370f02d74de", scratchOne, scratchTwo, scratchThr]; //[0] = index marker of scratch chars
+
+    		/*n.discoverSomeServicesAndCharacteristics(scratchTransport,indexAndScratches, function(err, services, characteristics) {
     			
-    			console.log("discoverSome", services, characteristics);
+    			console.log("in discoverSome", passThrough.msg);
+    			console.log(n.advertisement.localName, index);
+
+    			
 
     			var service = services[0];	
 				var characteristic = characteristics[0];
 				var buff = new Buffer(passThrough.msg);
 
-				console.log("in discoverSome", buff, service, characteristic);
+				console.log("in discoverSome", buff, characteristics);
 
 				characteristic.write(buff, false, function(err) { 
-
-					// process doesn't close, but also doesn't resume 
+					// why does this make everything freeze?
+					// process doesn't close, but also doesn't resume hmmm....
 					console.log("in characteristic.write ", buff);
 					
-                	if (err) {
-                		console.log(err);
-                	}
-                });   
+					if (err) throw err;
+				});   
 
-    		});
+			});*/
+    		
     	}		
 	});
 }
+
+
+
+
 
 
 // Send data over OSC to Processing -- will need to be called now.
@@ -168,6 +202,7 @@ var readDataFromBean = function(name, characteristics) {
 			var value = data[1]<<8 || (data[0]); // not sure what is going on here...
 
 			sendDataToOSC(scratchNumber, value, name); // To OSC
+
 		});
 
 		n.notify(true, function(err) {
@@ -187,7 +222,12 @@ var setupChars = function(peripheral) {
 	peripheral.discoverSomeServicesAndCharacteristics([],scratch,function(err,services,characteristics) {
 		if (err) throw err;
 		readDataFromBean(name, characteristics); // pass to subscribe / read
+
+		console.log('insideSetupChars!', characteristics);
+		
 	});
+
+
 
 };
 
@@ -260,4 +300,5 @@ process.on('SIGINT', exitHandler.bind(null, {exit:true}));
 
 //catches uncaught exceptions
 process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
+
 
