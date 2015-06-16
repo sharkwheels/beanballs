@@ -161,9 +161,9 @@ var writeToBean = function(passThrough){
 
 			});*/
     		
-    	}		
-	});
-}
+    	}	// if	
+	}); // map
+} // close
 
 
 
