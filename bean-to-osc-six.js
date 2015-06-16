@@ -103,9 +103,10 @@ var writeToBean = function(passThrough){
 	console.log("in Write to bean: ", passThrough);
 
     _.map(beanArray, function(n){
-    	if(n.advertisement.localName === passThrough.name){
+    	if(n.advertisement.localName === passThrough.name){  // compare the incoming name on the socket w/ the local name in beanArray
 
-    		//console.log("in if passthroughname", passThrough.msg, n.advertisement.localName); // not sure if i need index for this function
+    		//console.log("in if passthroughname", passThrough.msg, n.advertisement.localName); 
+
     		var name = n.advertisement.localName;
 
     		n.discoverSomeServicesAndCharacteristics([],scratch,function(err,services,characteristics) {
