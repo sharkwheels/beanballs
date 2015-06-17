@@ -1,5 +1,5 @@
 
-// Originally written by Boris Kourt, used in Costumes for Cyborgs. 
+// Originally written by Boris Kourtoukov, used in Costumes for Cyborgs. 
 // May 2015
 // additions: passing the bean name, enbale only if BT is active, added a listening socket. 
 // Alex = changes to setup and subscribe 
@@ -103,72 +103,30 @@ var writeToBean = function(passThrough){
 	console.log("in Write to bean: ", passThrough);
 
     _.map(beanArray, function(n){
-    	if(n.advertisement.localName === passThrough.name){  // compare the incoming name on the socket w/ the local name in beanArray
+    	if(n.advertisement.localName === passThrough.name){
+	
+    		//var name = n.advertisement.localName;
 
-    		//console.log("in if passthroughname", passThrough.msg, n.advertisement.localName); 
+    		n.discoverSomeServicesAndCharacteristics(['a495ff20c5b14b44b5121370f02d74de'], [scratchThr], function(error, services, characteristics){
 
-    		var name = n.advertisement.localName;
+    			var service = services[0];
+      			var characteristic = characteristics[0];
+      			var toSend = passThrough.msg;
 
-    		n.discoverSomeServicesAndCharacteristics([],scratch,function(err,services,characteristics) {
-				if (err) throw err;
+      			console.log("service", service);
+      			console.log("characteristic", characteristic);
 
-				var buff = new Buffer(passThrough.msg);
+      			characteristic.write(new Buffer([toSend]), false, function(error) {
+        		if (error) { console.log(error); }
+        			console.log("wrote to scratch bank 3");
+      			});
 
-				console.log("in discoversome", buff);
-				console.log('in discoversome', characteristics);
+      			// not sure how to make the program resume, it stops here. No error, just stops processing. 
 
-				var characteristic = characteristics[0];
-				_.map(characteristics, function(n, index){
-						characteristic.write(buff, false, function(err) { 
-						// why does this make everything freeze?
-						// process doesn't close, doesn't throw an error, but also doesn't resume hmmm....
-						console.log("in characteristic.write ", buff);
-
-						if (err) throw err;
-					});   
-
-				});
-				
-			});
-
-			// old discover some, where i was manually following of an example. Same issue tho, got to write and then didn't resume. 
-
-    		// was getting a weird hex type error, decided to just do it this way for now. 
-
-    		//var scratchTransport =["a495ff20c5b14b44b5121370f02d74de"];
-			//var indexAndScratches = ["a495ff11c5b14b44b5121370f02d74de", scratchOne, scratchTwo, scratchThr]; //[0] = index marker of scratch chars
-
-    		/*n.discoverSomeServicesAndCharacteristics(scratchTransport,indexAndScratches, function(err, services, characteristics) {
-    			
-    			console.log("in discoverSome", passThrough.msg);
-    			console.log(n.advertisement.localName, index);
-
-    			
-
-    			var service = services[0];	
-				var characteristic = characteristics[0];
-				var buff = new Buffer(passThrough.msg);
-
-				console.log("in discoverSome", buff, characteristics);
-
-				characteristic.write(buff, false, function(err) { 
-					// why does this make everything freeze?
-					// process doesn't close, but also doesn't resume hmmm....
-					console.log("in characteristic.write ", buff);
-					
-					if (err) throw err;
-				});   
-
-			});*/
-    		
-    	}	// if	
-	}); // map
-} // close
-
-
-
-
-
+    		});
+    	}		
+	});
+}
 
 // Send data over OSC to Processing -- will need to be called now.
  
@@ -301,5 +259,3 @@ process.on('SIGINT', exitHandler.bind(null, {exit:true}));
 
 //catches uncaught exceptions
 process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
-
-
