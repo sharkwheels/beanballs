@@ -94,8 +94,9 @@ var newSocket = function(msg, rinfo){
     };
 
     console.log("newSocket", passThrough.name);
-
     writeToBean(passThrough);
+
+    
     
 // end of new socket
 };
@@ -106,32 +107,39 @@ var writeToBean = function(passThrough){
 
 	var passThrough = passThrough;
 
-	console.log("in Write to bean: ", passThrough);
-
     _.map(beanArray, function(n){
-    	if(n.advertisement.localName === passThrough.name){
-	
-    		//var name = n.advertisement.localName;
 
-    		n.discoverSomeServicesAndCharacteristics(['a495ff20c5b14b44b5121370f02d74de'], [scratchThr], function(error, services, characteristics){
+    	console.log("map:", n);
+
+    	if(n.advertisement.localName === passThrough.name){
+
+    		console.log("in Write to bean, im map: ", passThrough);
+	
+    		var name = n.advertisement.localName;
+    		var toSend = passThrough.msg;
+
+    			n.discoverSomeServicesAndCharacteristics(['a495ff20c5b14b44b5121370f02d74de'], [scratchThr], function(error, services, characteristics){
 
     			var service = services[0];
       			var characteristic = characteristics[0];
-      			var toSend = passThrough.msg;
 
-      			console.log("service", service);
-      			console.log("characteristic", characteristic);
+	      			if (toSend != null) {
 
-      			if (toSend != null) {
-      				characteristic.write(new Buffer([toSend]), false, function(error) {
-        				if (error) { console.log(error); }
-        					console.log("wrote " + toSend + " to scratch bank 3");
-      				});
-      			}
+		      			characteristic.write(new Buffer([toSend]), true, function(error) {
+		        			if (error) { console.log(error); }
+		        			console.log("wrote " + toSend + " to scratch bank 3");
+		        				
+		        			// not sure how to make the program resume, it stops here. No error, just stops processing. I don't want to disconnect it. 
 
-      			// not sure how to make the program resume, it stops here. No error, just stops processing. 
+		      			});
+		      		}
+    			});
 
-    		});
+    			/*n.disconnect(function(error) {
+       			console.log('disconnected from peripheral: ' + n.uuid);
+    			});*/
+    		
+    		
     	}		
 	});
 }
@@ -192,7 +200,7 @@ var setupChars = function(peripheral) {
 		if (err) throw err;
 		readDataFromBean(name, characteristics); // pass to subscribe / read
 
-		console.log('insideSetupChars!', characteristics);
+		//console.log('insideSetupChars!', characteristics);
 		
 	});
 
@@ -222,6 +230,14 @@ var setupPeripheral = function(a) {
     });
 
 }; 
+
+/*var disconnectBean = function(n) {
+	n.disconnect();
+	console.log( n.advertisement.localName + ' disconnected');
+	n = null;
+	noble.startScanning([], true);
+	state = 'scanning';
+}*/
 
 /// Discover beans ///////////////
 
