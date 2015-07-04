@@ -59,7 +59,7 @@ var discoverBeans = function(q) {
 		
 		// this makes an object w/ a key of the UUID and the local name
 
-    	beanMap[q.uuid] = q.advertisement.localName;
+    	beanMap[q.advertisement.localName] = q.advertisement;
     	console.log("!discover", beanMap);  	
     	q.connect(connect.bind({q:q}));  // making the bean into an objcet and binding it to connec
 
@@ -108,7 +108,7 @@ var setupServices = function(beanName, thisBean) {
 
 					// send that shit to read and write
 					readFromBean(beanName, characteristics[0], characteristics[1]); // name, scratch one, and scratch two
-					writeToBean(beanName, characteristics[2]); // name and scratch 3
+                    beanMap[beanName].characteristics = characteristics;
 				});
 			}
 
@@ -127,7 +127,6 @@ var setupServices = function(beanName, thisBean) {
 ---|---------------------------------*/
 
 var readFromBean = function(beanName, scratchOne, scratchTwo) {
-
 
 	//console.log("!readFromBean", beanName, scratchOne, scratchTwo );
 	console.log("!readFromBean", beanName);
@@ -157,61 +156,6 @@ var readFromBean = function(beanName, scratchOne, scratchTwo) {
 };
 
 
-
-
-
-// Alright. I solved part of the write issue. Nothing freezes, and it does, indeed, write. 
-// But now how to re-write this so its not nested
-
-var writeToBean = function(b, scratchThree) {
-
-	var beanName = b;
-	console.log("!writeToBean", beanName);
-
-	var oscSocket = dgram.createSocket("udp4", function(msg, rinfo){
-
-		var getMsg = osc.fromBuffer(msg);
-
-		//console.log("sock", getMsg);
-
-		var passThrough = {
-    		msg      : getMsg.args[1].value,
-    		name     : getMsg.args[0].value,
-    		address  : getMsg.address,
-    		type     : getMsg.oscType
-   		};
-
-   		console.log("oscSocket", beanName, passThrough.name, passThrough.msg, passThrough.address, passThrough.type); 
-
-   		// beanName never changes. It needs to.
-   		//ie: BeanBall1 BeanBall2 1 /processing message
-   		// needs to be
-   		//BeanBall2 BeanBall2 1 /processing message
-
-    	var toSend = passThrough.msg;
-
-    	console.log("!sending to ", beanName);
-
-    		scratchThree.write(new Buffer([toSend]), true, function(error) {
-		        if (error) { console.log(error); }
-		        	console.log("wrote " + toSend + " to scratch bank 3 of " + beanName);
-		        				 
-		    });
-
-		    scratchThree.notify(true, function(err) {
-			if (err) throw err;
-		});
-
-   		
-	});
-
-	oscSocket.bind(inport);
-
-
-}; // end of write */
-
-
-
 /* | OSC SEND
 ---|----------------------------------------------------*/
 
@@ -233,6 +177,51 @@ var sendToOsc = function(beanName, scratchNumber, value) {
 
 };
 
+
+// receive OSC
+
+var oscSocket = dgram.createSocket("udp4", function(msg, rinfo) {
+  var error;
+  try {
+    var getMsg = osc.fromBuffer(msg);
+      
+        var messageParameters = {
+    		msg      : getMsg.args[1].value,
+    		name     : getMsg.args[0].value
+   		};
+      
+      writeToBean ( messageParameters.name, messageParameters.msg );
+//    return console.log(getMsg);
+  } catch (_error) {
+    error = _error;
+    return console.log("invalid OSC packet");
+  }
+});
+
+oscSocket.bind(inport);
+
+
+// take input OSC, write to bean scratch bank
+
+var writeToBean = function ( beanName, toSend ) {
+
+    // beanName never changes. It needs to.
+    //ie: BeanBall1 BeanBall2 1 /processing message
+    // needs to be
+    //BeanBall2 BeanBall2 1 /processing message
+
+    console.log("!sending to ", beanName);
+
+    beanMap[beanName].characteristics[2].write(new Buffer([toSend]), true, function(error) {
+        if (error) { console.log(error); }
+            console.log("wrote " + toSend + " to scratch bank 3 of " + beanName);
+    });
+
+    beanMap[beanName].characteristics[2].notify(true, function(err) {
+        if (err) throw err;
+    });
+
+}
 
 /* | NOBLE PROCESS
 ---|---------------------------------*/

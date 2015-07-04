@@ -64,13 +64,13 @@ void sendAMessage(String n) {
 		if (n.equals(beanNames[0]) == true) {
 
 			myOscMessage.add(n); // add the baseLinel name
-			myOscMessage.add("blue"); // send back a command for the bean
+			myOscMessage.add(2); // send back a command for the bean
 		}
 
 		if (n.equals(beanNames[1]) == true) {
 
 			myOscMessage.add(n); // and the ball name
-			myOscMessage.add("red"); // send back a command for the bean
+			myOscMessage.add(1); // send back a command for the bean
 
 		}
 
