@@ -1,0 +1,24 @@
+{
+  "name": "beanballs",
+  "version": "0.0.0",
+  "description": "some noisy things",
+  "author": "sharkwheels",
+  "scripts": {
+    "start": "node bean-osc-new3.js"
+  },
+  "repository": {
+  	"type": "git",
+  	"url": "https://github.com/sharkwheels/beanballs"
+  	},
+  "dependencies": {
+    "noble": "0.3.7",
+    "lodash": "3.9.2",
+    "osc-min": "0.2.0",
+    "dgram": "*",
+    "util": "*"
+  },
+  "engines": {
+    "node": "v0.10.33"
+  },
+  "license": "MIT"
+}
