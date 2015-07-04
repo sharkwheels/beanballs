@@ -133,19 +133,18 @@ var readFromBean = function(beanName, scratchOne, scratchTwo) {
 
 		scratchOne.on('read', function(data, isNotification) {
 			var scratchNumber = 1;
-			var value = (data[1]<<8) + data[0];
-			console.log("scratchOne: " + beanName + " intiger is: " + value);
-			sendToOsc(scratchNumber, value, beanName);
+			var value = data.readUInt32LE (0) / 1000;
+			console.log(beanName + " altitude: " + value);
+			sendToOsc(beanName, scratchNumber, value);
 		});
 
 		scratchOne.notify(true, function(err) {
 			if (err) throw err;
 		});
-
 		scratchTwo.on('read', function(data, isNotification) {
 			var scratchNumber = 2;
-			var value = (data[1]<<8) + data[0];
-			console.log("scratchOne: " + beanName + " intiger is: " + value);
+			var value = data.readUInt32LE(0);
+			console.log(beanName + " delta acceleration: " + value);
 			sendToOsc(beanName, scratchNumber, value );
 		});
 
