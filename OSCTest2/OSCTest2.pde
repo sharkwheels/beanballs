@@ -11,6 +11,8 @@ Minim       minim;
 AudioOutput out;
 Oscil       wave;
 
+FloatDict beamBaromLast = new FloatDict();
+FloatDict beanBaromBase = new FloatDict();
 
 
 boolean blueThing = false;
@@ -64,13 +66,13 @@ void sendAMessage(String n) {
 		if (n.equals(beanNames[0]) == true) {
 
 			myOscMessage.add(n); // add the baseLinel name
-			myOscMessage.add(2); // send back a command for the bean
+			myOscMessage.add("blue"); // send back a command for the bean
 		}
 
 		if (n.equals(beanNames[1]) == true) {
 
 			myOscMessage.add(n); // and the ball name
-			myOscMessage.add(1); // send back a command for the bean
+			myOscMessage.add("red"); // send back a command for the bean
 
 		}
 
@@ -123,16 +125,26 @@ void oscEvent(OscMessage theOscMessage) {
 		// check of the typetag is right
 		if (theOscMessage.checkTypetag("sff")) {
 			// parse the message and extract the values
-			String n = theOscMessage.get(0).stringValue();
-			float d = theOscMessage.get(1).floatValue();
-			float b = theOscMessage.get(2).floatValue();
+			String name = theOscMessage.get(0).stringValue();
+			float data = theOscMessage.get(1).floatValue();
+			float barom = theOscMessage.get(2).floatValue();
 
-			makeNoise(b, n);
-			sendAMessage(n);
-			
+                        beanBaromLast.set(name, barom);
+                        
+                        // get a calibrated reading
+                        barom = barom - beanBaromBase.get(name);
+
+			makeNoise(barom, name);
+			sendAMessage(name);
+
+                   
 
 		}
 	}
+}
+
+void calibrate() {
+  beanBaromBase = beanBaromLast.copy();
 }
 
 // map the values coming in. This isn't quite right. Saving for later.
