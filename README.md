@@ -23,9 +23,9 @@ Download and install Adafruit's library for the BMP180: https://learn.adafruit.c
 /* | RUNNING
 ---|---------------------------------*/
 
-1) Upload bean_bmp180start_6.ino to the bean
-2) Launch Processing and build OSCTest2.pde (this will launch t)
-3) Run the node process out of a terminal window: node bean-osc-new3.js
+1) Upload bean_bmp180start_6.ino to the bean<br />
+2) Launch Processing and build OSCTest2.pde (this will launch t)<br />
+3) Run the node process out of a terminal window: node bean-osc-new3.js<br />
 
 Stuff be chattin' !
 
