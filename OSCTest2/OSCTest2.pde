@@ -11,7 +11,7 @@ Minim       minim;
 AudioOutput out;
 Oscil       wave;
 
-FloatDict beamBaromLast = new FloatDict();
+FloatDict beanBaromLast = new FloatDict();
 FloatDict beanBaromBase = new FloatDict();
 
 
@@ -129,10 +129,10 @@ void oscEvent(OscMessage theOscMessage) {
 			float data = theOscMessage.get(1).floatValue();
 			float barom = theOscMessage.get(2).floatValue();
 
-                        beanBaromLast.set(name, barom);
+                beanBaromLast.set(name, barom);
                         
-                        // get a calibrated reading
-                        barom = barom - beanBaromBase.get(name);
+                // get a calibrated reading
+                barom = barom - beanBaromBase.get(name);
 
 			makeNoise(barom, name);
 			sendAMessage(name);

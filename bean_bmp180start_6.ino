@@ -49,21 +49,20 @@ void loop() {
   previousAccel = currentAccel;
  
  // only if the ball is moving
- if(accelDifference > accelerationThreshold){
-   // get the event pressure
+ 
      if (event.pressure){
         
         float seaLevelPressure = 1018;
         //float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
         float altitude_m = (bmp.pressureToAltitude(seaLevelPressure,event.pressure));
         
-        Bean.setScratchNumber(1, altitude_m);  // give us the altitude
-        Bean.setScratchNumber(2, accelDifference); // give us the accel Difference. 
+        Bean.setScratchNumber(1, (long) (altitude_m * 1000) );  // give us the altitude
+        //Bean.setScratchNumber(2, accelDifference); // give us the accel Difference. 
        
     } else {
       Serial.println("Sensor error");
     } // end of else
-  }
+
 
   // read the incoming integer from scratch three
   number = Bean.readScratchNumber(3);
@@ -88,3 +87,59 @@ int getAccelDifference(AccelerationReading readingOne, AccelerationReading readi
   // Return the magnitude
   return deltaX + deltaY + deltaZ;   
 }
+
+
+
+
+
+  //String strCmd = getCommand();
+
+/*if ( ((strCmd.length()) > 0) && (strCmd!= " ") ) {
+
+    if ( strCmd == "BLUE" ) {
+      Bean.setLed(0,0,225);
+    } 
+
+    if ( strCmd == "RED" ) {
+      Bean.setLed(100,0,0);
+    }
+    
+  }*/
+
+// scratch to string command (BDWalker)
+
+/*String getCommand() {
+  // read from scratch bank 2
+  
+  ScratchData scratchCommand = Bean.readScratchData( 2 );
+
+  // Convert command to a String object
+
+  String strCmd = "";
+  for (int i=0; i<scratchCommand.length; i++) {
+    strCmd += (String) (char) scratchCommand.data[i];
+  }
+  strCmd.toUpperCase();
+  // Clear the command so we don't process twice
+  uint8_t buffer[1] = { ' ' };
+
+  Bean.setScratchData( 2, buffer, 1 );
+
+  return strCmd;
+
+
+}*/
+
+
+//number = Bean.readScratchNumber(1);
+  
+        //Serial.print("Number: ");
+        //Serial.println(number);
+
+        //Serial.println(altitude_m);
+        //Serial.println(accelDifference);
+
+        //int number = altitude_m * 100;
+        //Serial.println(number);
+        // Bean.setScratchNumber(1, number);
+
