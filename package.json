@@ -14,7 +14,6 @@
     "noble": "0.3.7",
     "lodash": "3.9.2",
     "osc-min": "0.2.0",
-    "dgram": "*",
     "util": "*"
   },
   "engines": {
