@@ -123,7 +123,7 @@ var setupServices = function(beanName, thisBean) {
 	});
 };
 
-/* | READ AND WRITE TO BEANS
+/* | READ FROM BEAN
 ---|---------------------------------*/
 
 var readFromBean = function(beanName, scratchOne, scratchTwo) {
@@ -177,7 +177,8 @@ var sendToOsc = function(beanName, scratchNumber, value) {
 };
 
 
-// receive OSC
+/* | OSC RECEIVE
+---|----------------------------------------------------*/
 
 var oscSocket = dgram.createSocket("udp4", function(msg, rinfo) {
   var error;
@@ -199,15 +200,13 @@ var oscSocket = dgram.createSocket("udp4", function(msg, rinfo) {
 
 oscSocket.bind(inport);
 
+/* | WRITE TO BEAN
+---|----------------------------------------------------*/
 
 // take input OSC, write to bean scratch bank
 
 var writeToBean = function ( beanName, toSend ) {
 
-    // beanName never changes. It needs to.
-    //ie: BeanBall1 BeanBall2 1 /processing message
-    // needs to be
-    //BeanBall2 BeanBall2 1 /processing message
 
     console.log("!sending to ", beanName);
 

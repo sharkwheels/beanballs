@@ -1,43 +1,74 @@
+/* | LIBARIES
+---|----------------------------------------------------*/
+
 import oscP5.*;
 import netP5.*;
 import ddf.minim.*;
 import ddf.minim.ugens.*;
 
+/* | OSC variables
+---|----------------------------------------------------*/
+
 OscP5 oscP5;
 NetAddress myRemoteLocation;
 
+/* | MINIM SETUP
+---|----------------------------------------------------*/
 
 Minim       minim;
 AudioOutput out;
 Oscil       wave;
 
+/* | CALIBRATION VARIABLES
+---|----------------------------------------------------*/
+
 FloatDict beanBaromLast = new FloatDict();
 FloatDict beanBaromBase = new FloatDict();
+println("beanBaromLast: "+beanBaromLast);
+println("beanBaromBase: "+beanBaromBase);
 
+
+/* | BACKGROUND COLOUR
+---|----------------------------------------------------*/
 
 boolean blueThing = false;
 boolean redThing = true;
 
+/* | BEAN GLOBALS
+---|----------------------------------------------------*/
+
 String [] beanNames = {"BeanBall1","BeanBall2"};
 
 
+/* | SETUP
+---|----------------------------------------------------*/
+
+
 void setup() {
+
+	// FILE
+
 	size(800,800);
 	frameRate(25);
 	background(0);
 
-	oscP5 = new OscP5(this, 3000); // THIS is receving info from the bean.
+	// OSC
 
+	oscP5 = new OscP5(this, 3000); // THIS is receving info from the bean.
 	myRemoteLocation = new NetAddress("127.0.0.1", 4000); /// broadcast? This is a unicast. Hmm.
 	println("Broadcasting on:" + myRemoteLocation);
 
+	// MINIM
 
 	minim = new Minim(this);
   	out = minim.getLineOut();
-  
   	wave = new Oscil( 440, 0.5f, Waves.SINE );
-  	//wave.patch( out );
+  	wave.patch( out );
 }
+
+
+/* | LOOP
+---|----------------------------------------------------*/
 
 void draw() {
 	background(0); 
@@ -52,11 +83,11 @@ void draw() {
 	}
 }
 
-// just testing this to see if it talks back to JS
+
+/* | OSC SEND
+---|----------------------------------------------------*/
 
 void sendAMessage(String n) {
-
-	// i will need more logic in here. Right now it trips off immediately. But it works. 
 
 	println("!sendAMessage n: " + n );
 
@@ -65,14 +96,14 @@ void sendAMessage(String n) {
 	if (n != null) {
 		if (n.equals(beanNames[0]) == true) {
 
-			myOscMessage.add(n); // add the baseLinel name
-			myOscMessage.add("blue"); // send back a command for the bean
+			//myOscMessage.add(n); // add the baseLinel name
+			//myOscMessage.add(1); // send back a command for the bean
 		}
 
 		if (n.equals(beanNames[1]) == true) {
 
-			myOscMessage.add(n); // and the ball name
-			myOscMessage.add("red"); // send back a command for the bean
+			//myOscMessage.add(n); // and the ball name
+			//myOscMessage.add(2); // send back a command for the bean
 
 		}
 
@@ -82,21 +113,20 @@ void sendAMessage(String n) {
 }
 
 
+/* | SOUND MAPPING
+---|----------------------------------------------------*/
+
+
 
 void makeNoise(float bValue, String nValue) {
 	
-	float bV = bValue;
-	String nV = nValue; 
-
-
-	// need to twiddle w/ frequency stuff in here as well. 
 	
-	// if neither item is empty
 
-	if ((bV != 0.0) && (nV != null)) {
 
-		if (nV.equals(beanNames[0]) == true) {
-			println(nV + " " + bV);
+	if ((bValue != 0.0) && (nValue != null)) {
+
+		if (nValue.equals(beanNames[0]) == true) {
+			println(nValue + " " + bValue);
 			wave.setWaveform(Waves.SAW);
 			wave.setFrequency( 200 );
 			blueThing = true;
@@ -104,8 +134,8 @@ void makeNoise(float bValue, String nValue) {
 			
 		}
 
-		if (nV.equals(beanNames[1])== true) {
-			println(nV + " " + bV);
+		if (nValue.equals(beanNames[1])== true) {
+			println(nValue + " " + bValue);
 			wave.setWaveform(Waves.SQUARE);
 			wave.setFrequency( 300 );
 			redThing = true;
@@ -116,6 +146,10 @@ void makeNoise(float bValue, String nValue) {
 	} 	
 
 }
+
+
+/* | OSC RECEIVE
+---|----------------------------------------------------*/
 
 void oscEvent(OscMessage theOscMessage) {
 	theOscMessage.print();
